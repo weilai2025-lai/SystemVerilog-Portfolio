@@ -85,26 +85,35 @@ end
 ## 2. Sum Accumulator Bit-Width Selection
 
 ### 決策
-累加器 `sum` 的寬度設定為 **2 * data_width** (或 2*data_width + 1)。
+**累加器暫存器 `sum` 維持 `2*data_width` (32-bit)，但中間運算訊號 `comboadd` 多開 1-bit (33-bit)。**
 
-### 理由
-1.  **乘法擴展 (Multiplication Expansion)**：
-    - 輸入 `myinput` 是 `data_width` (16-bit)。
-    - 權重 `weight` 是 `data_width` (16-bit)。
-    - 乘法結果 `mul` 必然需要 16 + 16 = 32-bit (`2 * data_width`) 才能完整保留精度而不溢位。
+### 硬體運作原理 (Why logic works?)
 
-2.  **累加溢位防護 (Accumulation Headroom)**：
-    - 我們需要連續累加 784 次 (MNIST 圖片大小)。
-    - 理論上，累加 784 個 32-bit 的數，需要額外的 $\lceil \log_2(784) \rceil \approx 10$ bits 才能保證 "絕對" 不溢位。
-    - **但為什麼只用 2*data_width 就夠？**
-        - 因為神經網路的權重與輸入通常呈現常態分佈，正負值會互相抵消，極少出現連續 784 次都是最大正值的情況。
+#### 1. 暫態擴展 (Transient Expansion via comboadd)
+雖然 `sum` (Storage) 只有 32-bit。
+但你的 `comboadd` (Wire) 定義為 `logic signed [2*data_width:0] comboadd;` (**33-bit**)。
 
-3.  **配合飽和運算 (Saturation Logic)**：
-    - 我們在代碼中實作了 `pos_sat` (正飽和) 和 `neg_sat` (負飽和)。
-    - 如果真的爆掉了，就卡在最大/最小值，這對神經網路的準確度影響遠小於直接 Overflow (數值 wrap around)。
+**關鍵點：** 當 `mul + sum` 的結果超過 32-bit 範圍時，這個瞬間的溢位數值會被完整保留在 33-bit 的 `comboadd` 線路上，不會馬上遺失。
 
-**設計總結：**
-`sum` 必須至少容納單次乘法的完整結果 (`2*data_width`)，這就是基本盤。
+#### 2. 溢位攔截 (Overflow Detection)
+我們檢查 `mul` (加數)、`sum` (被加數) 和 `comboadd` (結果) 的最高位元 (Sign Bit)。
+
+**邏輯判斷：**
+```systemverilog
+// 正 + 正 = 負 (代表爆掉了)
+if (!mul[MSB] && !sum[MSB] && comboadd[MSB+1])
+```
+因為 `comboadd` 多了那第 33 個 bit，所以它能正確反映出「數學上已經爆掉」的事實。
+
+#### 3. 飽和寫回 (Saturation Clamp)
+當偵測到上述溢位時，我們拒絕把 `comboadd` (那串爆掉的亂碼) 寫入 `sum`。
+取而代之，我們強制寫入 `pos_sat` (32-bit 的最大正整數)。
+
+### 結論
+因為我們有這道「攔截機制」，所以 `sum` 暫存器永遠不需要儲存大於 32-bit 的數值。任何超過的值，都會被硬體「削平」成 `pos_sat`。
+
+**一句話總結：**
+我們不需要加寬 `sum` 來存放溢位值，因為 `comboadd` (33-bit) 負責在組合邏輯層偵測溢位，並透過飽和邏輯直接將其「削平」後才存入 `sum`。
 
 ---
 
