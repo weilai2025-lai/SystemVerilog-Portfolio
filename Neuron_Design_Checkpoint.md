@@ -91,8 +91,6 @@ end
 在決定使用 32-bit 作為儲存寬度時，我們考量了以下兩點：
 1.  **乘法擴展的基本需求**：
     輸入 `myinput` (16-bit) 與權重 `weight` (16-bit) 相乘，結果 `mul` 必然需要 32-bit 才能完整保留精度。因此 32-bit 是絕對的底限。
-2.  **統計分佈的特性**：
-    雖然連續累加 784 次 (MNIST 圖片大小) 理論上可能溢位，但神經網路權重與輸入通常呈現 **常態分佈**，正負值會互相抵消。極少出現連續 784 次都是最大正值的情況，因此不需要為了極端狀況浪費暫存器資源去擴充到 40+ bits。
 
 ### 硬體運作原理 (Why logic works?)
 
@@ -105,16 +103,26 @@ end
 #### 2. 溢位攔截 (Overflow Detection)
 我們檢查 `mul` (加數)、`sum` (被加數) 和 `comboadd` (結果) 的最高位元 (Sign Bit)。
 
-**邏輯判斷：**
-```systemverilog
-// 正 + 正 = 負 (代表爆掉了)
-if (!mul[MSB] && !sum[MSB] && comboadd[MSB+1])
-```
-因為 `comboadd` 多了那第 33 個 bit，所以它能正確反映出「數學上已經爆掉」的事實。
+**邏輯判斷與飽和寫回 (Saturation Logic)：**
 
-#### 3. 飽和寫回 (Saturation Clamp)
-當偵測到上述溢位時，我們拒絕把 `comboadd` (那串爆掉的亂碼) 寫入 `sum`。
-取而代之，我們強制寫入 `pos_sat` (32-bit 的最大正整數)。
+**Case 1: 正溢位 (Positive Overflow)**
+```systemverilog
+// 正 + 正 = 負 (代表正向爆表)
+if (!mul[MSB] && !sum[MSB] && comboadd[MSB+1])
+    sum <= pos_sat; // 強制寫入最大正整數
+```
+當兩個正數相加，結果的 Sign Bit 卻變成 1 (負) 時，代表發生了正溢位。我們攔截錯誤的 `comboadd`，改寫入 `pos_sat`。
+
+**Case 2: 負溢位 (Negative Overflow)**
+```systemverilog
+// 負 + 負 = 正 (代表負向爆表)
+else if (mul[MSB] && sum[MSB] && !comboadd[MSB+1])
+    sum <= neg_sat; // 強制寫入最小負整數
+```
+同理，當兩個負數相加，結果的 Sign Bit 卻變成 0 (正) 時，代表發生了負溢位。我們同樣攔截，改寫入 `neg_sat` (32-bit 的最小負整數)。
+
+**正常情況：**
+如果沒有偵測到上述溢位，則 `sum <= comboadd[MSB:0]` (只取低 32 位寫入)。
 
 ### 結論
 因為我們有這道「攔截機制」，所以 `sum` 暫存器永遠不需要儲存大於 32-bit 的數值。任何超過的值，都會被硬體「削平」成 `pos_sat`。
