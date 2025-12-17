@@ -4,37 +4,68 @@
 **Project:** NPU Implementation (SystemVerilog)  
 **Author:** Wei-In Lai
 
-## 1. Sigmoid ROM Addressing Logic (The "MSB Flip" Trick)
+## 1. Sigmoid ROM Addressing Logic: From Math to Bit-Hacking
 
-### 程式碼片段
-```systemverilog
-// x is signed input (2's complement), y is unsigned ROM address
-always_ff @(posedge clk) begin
-    y <= {~x[in_width-1], x[in_width-2:0]};
-end
-```
+**目標：** 將有號輸入 `x` (Signed 2's Complement) 映射到 ROM 的無號位址 `y` (Unsigned Index)。
 
-### 為什麼要這樣寫？（推導與證明）
-
-**問題情境：**
-- 輸入 `x` 是一個 **有號數 (Signed 2's Complement)**，代表神經元的加權總和（數值範圍包含負數到正數）。
-- ROM 的位址 `y` 是一個 **無號數 (Unsigned Index)**，代表查表的位置（從 0 開始遞增）。
-
+**核心概念：** 我們需要做一個座標平移，把原本在中間的 0 搬到 ROM 的中間位址。
 我們希望 ROM 的內容排列是順序的：
 - **Address 0 (最小位址)**：存放 Sigmoid(最小值)（即最負的輸入）
 - **Address Max (最大位址)**：存放 Sigmoid(最大值)（即最正的輸入）
 
-**直覺上的衝突：**
-在 2's Complement 表示法中，負數的 MSB 是 1，正數的 MSB 是 0。如果直接把二進位碼當作位址去查：
-- 正數 (MSB=0) 會被映射到 ROM 的 **前半段**。
-- 負數 (MSB=1) 會被映射到 ROM 的 **後半段**。
+### Phase 1: The Old VHDL Approach (Mathematical Offset)
+在原本的 VHDL 版本中，我們是用 **「算術邏輯」** 來思考。我們想把原本範圍 `[-128, +127]` 的訊號，平移成 `[0, 255]` 的位址。
 
-**結果：**
-數值順序會變成 `[0, 1, 2 ... -Max, ... -2, -1]`，這是錯亂的。
+**VHDL Code:**
+```vhdl
+if rising_edge(clk) then
+  if signed(x) >= 0 then
+    -- 正數：原本是 0，加上 128 (Offset) 變成 ROM 的中後半段
+    y <= std_logic_vector(signed(x) + to_signed(2**(inWidth-1), inWidth));
+  else
+    -- 負數：原本是 -1，減去 128 (或者說加上負的 Offset)，繞一圈回到 ROM 的前半段
+    y <= std_logic_vector(signed(x) - to_signed(2**(inWidth-1), inWidth));
+  end if;
+end if;
+```
+**缺點：** 雖然邏輯正確，但寫起來很冗長，而且使用了加法器/減法器邏輯 (Adder/Subtractor)，雖然合成器很聰明會優化，但語意上看起來很重。
 
-### 解決方案：MSB 反相
-我們需要把負數搬到前面（位址 0 至 N/2），把正數搬到後面（位址 N/2 至 N）。
-觀察二進位碼，只要把 **最高位元 (Sign Bit) 反相**，就能完美達成線性映射。
+### Phase 2: The "Aha!" Moment (Bitwise Analysis)
+讓我們用 3-bit (範圍 -4 ~ +3) 來拆解 VHDL 裡面的數學在二進位做了什麼事。
+OFFSET (偏移量) 是 $2^{(3-1)} = 4$，二進位是 `100`。
+
+1.  **對於正數 (Case: x = 0, 000)**
+    - VHDL 邏輯：`0 + 4 = 4`
+    - 二進位運算：`000 + 100 = 100`
+    - **觀察：** 其實只是把 MSB 從 0 變成 1。
+
+2.  **對於負數 (Case: x = -4, 100)**
+    - VHDL 邏輯：`-4 - 4 = -8`。在 3-bit 系統中，-8 溢位後就是 0。
+    - 二進位運算：`100 - 100 = 000` (或者想成 `100 + 100 = 1000` -> 取後三位 -> `000`)
+    - **觀察：** 其實只是把 MSB 從 1 變成 0。
+
+### Phase 3: The New SystemVerilog Approach (MSB Flip)
+我們發現，不管是要加 Offset 還是減 Offset，在二進位及補數系統的特性下，等效動作竟然只有「**反轉最高位元 (Toggle MSB)**」。
+
+**SystemVerilog Code:**
+```systemverilog
+always_ff @(posedge clk) begin
+    // 直接把 x 的最高位元取反 (~)，剩下的位元照抄
+    y <= {~x[in_width-1], x[in_width-2:0]};
+end
+```
+
+### 演進總結 (Summary of Evolution)
+
+| 特性 | 舊版 VHDL | 新版 SystemVerilog |
+| :--- | :--- | :--- |
+| **思考模式** | 十進位算術思維 (正數加偏移，負數減偏移) | 二進位硬體思維 (觀察 Bit pattern 的變化) |
+| **硬體成本** | 寫起來像加法器 (Adder)，依賴合成器優化 | 只有一個 **反相器 (Inverter)**，成本極低 |
+| **程式碼** | 7 行 (If-Else 判斷) | 1 行 (Bit Concatenation) |
+
+**結論：**
+`x ± Offset` <=> `MSB Invert`
+一言以蔽之：在二補數系統中，加上半個範圍的數值 (Bias Shift)，在硬體電路上 **等同於** 反轉最高位元 (MSB Invert)。
 
 ### Truth Table 證明 (以 3-bit 為例)
 假設 `in_width = 3`，數值範圍 -4 到 +3。
@@ -49,9 +80,6 @@ end
 | 1 | 001 | 0 | 101 (Addr 5) | |
 | 2 | 010 | 0 | 110 (Addr 6) | |
 | **3 (Max)** | 011 | 0 | **111 (Addr 7)** | **最大值 (Sigmoid趨近1)** |
-
-**結論：**
-`{~x[MSB], x[Rest]}` 是將 2's Complement (有號) 轉換為 Biased Unsigned (無號線性偏移) 的最快硬體實作方式。
 
 ---
 
