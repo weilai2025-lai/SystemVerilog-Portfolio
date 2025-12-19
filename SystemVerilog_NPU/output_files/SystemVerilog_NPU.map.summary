@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Thu Dec 18 20:51:13 2025
+Quartus Prime Version : 22.1std.0 Build 915 10/25/2022 SC Lite Edition
+Revision Name : SystemVerilog_NPU
+Top-level Entity Name : dnn
+Family : Cyclone IV E
+Total logic elements : 57,027
+    Total combinational functions : 53,732
+    Dedicated logic registers : 7,979
+Total registers : 7979
+Total pins : 24
+Total virtual pins : 0
+Total memory bits : 376,320
+Embedded Multiplier 9-bit elements : 160
+Total PLLs : 0

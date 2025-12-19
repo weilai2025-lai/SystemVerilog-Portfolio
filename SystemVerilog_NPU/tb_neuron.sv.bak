@@ -1,0 +1,86 @@
+`timescale 1ns/1ps
+
+module tb_neuron;
+	parameter int num_weight = 784;
+	parameter int data_width = 16;
+	parameter sigmoid_size = 10;
+	
+	parameter test_file = "C:/SystemVerilog_NPU/test_data/test_data_0000.txt";
+	
+	logic clk;
+	logic rst;
+	logic [data_width-1:0] myinput;
+	logic myinputvalid;
+	logic [data_width-1:0] output_data;
+	logic outvalid;
+	
+	logic [data_width-1:0] test_mem[0:num_weight];//0~783 mnist image vector data, 784 = class_id
+	logic [data_width-1:0] expect_label;
+	
+	neruon#(
+		.num_weight(numweight),
+		.data_width(data_widht),
+		.sigmoid_size(sigmoid_size)
+	)u_neuron(
+		.clk(clk),
+		.rst(rst),
+		.myinput(myinput),
+		.myinputvalid(myinputvalid),
+		.output_data(output_data),
+		.outvalid(outvalid)
+	);
+	
+	//generate clock
+	initial begin
+		clk = 0;
+		forever #10 clk = ~clk;
+	end
+	
+	//test procedure
+	initial begin
+		rst = 1;//initialization
+		myinput = 0;
+		myinputvalid = 0;
+		//read test data
+		$readmemb(test_file, test_mem);
+		expect_label = test_memp[num_weight];
+		$display("--------------------------------------------");
+		$display("Loading Data from: %s", test_file);
+		$display("Image Label (ROW 785): %0d", expect_label);
+		$display("--------------------------------------------");
+		//release reset button
+		#100
+		@(posedge clk);
+		rst = 0;
+		#20;
+		$display("Starting to stream 784 pixels");
+		
+		for (int i = 0; i < num_weight; i++) begin
+			@(posedge clk);
+			myinput <= test_mem[i];
+			myinputvalid <= 1'b1;
+		end
+		
+		@(posedge clk);
+		myinputvalid <= 1'b0;
+		myinput <= '0;
+		
+		$display("Input stream finished. Waiting for output...");
+		//wait outvalid signal
+		fork 
+			begin
+				wait(outvalid);
+				$display("\n>>> Simulation Success! Output Valid Detected. <<<");
+				$display("Neuron Output: %h (Hex) / %0d (Unsigned Decimal)", output_data, output_data);
+			end
+			begin
+				#20000;
+				$display("\n Time out");
+			end
+		join_any
+		
+		#100;
+		$stop;
+	end
+endmodule;
+	

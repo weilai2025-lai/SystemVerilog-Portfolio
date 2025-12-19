@@ -1,0 +1,30 @@
+import nn_config_pkg::*;
+module sig_rom
+	#(
+		parameter int in_width = sigmoid_size,
+		parameter int data_width = 16,
+		parameter sigmoid_file = "C:/VHDL_training/Neural/sigContent.mif"
+	)(
+		input logic clk,
+		input logic [in_width-1:0] x,//signal input, I use value to map LUT value.
+		output logic [data_width-1:0] output_data		
+	);
+	//calculate memory's depth = 2^in_width
+	localparam int depth = 1 << in_width;
+	//declare memory
+	logic [data_width-1:0] mem[0:depth-1];
+	//internal address
+	logic [in_width-1:0] y;
+	
+	//read memory
+	initial begin
+		$readmemb(sigmoid_file, mem);
+	end
+	
+	//addressing mapping logic
+	always_ff @(posedge clk) begin
+		y <= {~x[in_width-1], x[in_width-2:0]};//if you try write some truth table of mapping method, you'll know!
+	end
+	//output mapping value
+	assign output_data = mem[y];
+endmodule

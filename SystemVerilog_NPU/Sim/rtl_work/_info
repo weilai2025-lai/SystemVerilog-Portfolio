@@ -1,0 +1,667 @@
+m255
+K3
+13
+cModel Technology
+Z0 dC:\SystemVerilog_NPU\Sim
+vdnn
+Z1 DXx6 sv_std 3 std 0 22 F[19LRNL:5;XmIFh[XOPn1
+Z2 DXx4 work 13 nn_config_pkg 0 22 dj0E:N:7_@Gz^:D@6VMa=3
+Z3 DXx4 work 11 dnn_sv_unit 0 22 GC7Il@fU:GJKGDJDAfaI90
+Z4 Vd5@SeC`4?JLJzkh;NT]S[2
+r1
+!s85 0
+31
+!i10b 1
+Z5 !s100 5i;IAV>Aooj@SP[gQcSdC3
+Z6 IFMF4dDASW9d56dS3Y:mZm3
+Z7 !s105 dnn_sv_unit
+S1
+Z8 dC:\SystemVerilog_NPU\Sim
+Z9 w1766112028
+Z10 8../dnn.sv
+Z11 F../dnn.sv
+L0 3
+Z12 OV;L;10.1d;51
+Z13 !s108 1766182473.511000
+Z14 !s107 ../weight_memory_opt.sv|../weight_memory.sv|../tb_neuron_opt.sv|../tb_neuron.sv|../tb_dnn.sv|../sig_rom.sv|../nn_config_pkg.sv|../neuron_opt.sv|../neuron.sv|../maxfinder.sv|../dnn.sv|../Layer4.sv|../Layer3.sv|../Layer2.sv|../Layer1.sv|
+Z15 !s90 -reportprogress|300|../Layer1.sv|../Layer2.sv|../Layer3.sv|../Layer4.sv|../dnn.sv|../maxfinder.sv|../neuron.sv|../neuron_opt.sv|../nn_config_pkg.sv|../sig_rom.sv|../tb_dnn.sv|../tb_neuron.sv|../tb_neuron_opt.sv|../weight_memory.sv|../weight_memory_opt.sv|
+!s101 -O0
+o-O0
+Xdnn_sv_unit
+R1
+R2
+Z16 VGC7Il@fU:GJKGDJDAfaI90
+r1
+!s85 0
+31
+!i10b 1
+Z17 !s100 :L60[ZK<Lnb2efnIlDo[l1
+Z18 IGC7Il@fU:GJKGDJDAfaI90
+!i103 1
+S1
+R8
+R9
+R10
+R11
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vLayer1
+R1
+R2
+Z19 DXx4 work 14 Layer1_sv_unit 0 22 bM1JDXQ:cF2gTIo[cPc:X1
+Z20 VGD6EEVASAdN`hLOM1GKz;2
+r1
+!s85 0
+31
+!i10b 1
+Z21 !s100 ^F][bV_bSANgWF@SB`Hgz1
+Z22 I<UIoZ;KI?YR_T[SzkM1[W0
+Z23 !s105 Layer1_sv_unit
+S1
+R8
+Z24 w1766079302
+Z25 8../Layer1.sv
+Z26 F../Layer1.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z27 n@layer1
+XLayer1_sv_unit
+R1
+R2
+Z28 VbM1JDXQ:cF2gTIo[cPc:X1
+r1
+!s85 0
+31
+!i10b 1
+Z29 !s100 97cTHPfG0f8@k0UY0;6?I0
+Z30 IbM1JDXQ:cF2gTIo[cPc:X1
+!i103 1
+S1
+R8
+R24
+R25
+R26
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z31 n@layer1_sv_unit
+vLayer2
+R1
+R2
+Z32 DXx4 work 14 Layer2_sv_unit 0 22 ?9?QlQj`7h1o1m2:4d<SO1
+Z33 V8DaBHK;kV@?mOG4Y7_]_L0
+r1
+!s85 0
+31
+!i10b 1
+Z34 !s100 QACLCUP=ek4R<@nGG:A]i2
+Z35 I8DLHYzo5Tn??40fOT=PR^3
+Z36 !s105 Layer2_sv_unit
+S1
+R8
+Z37 w1766088178
+Z38 8../Layer2.sv
+Z39 F../Layer2.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z40 n@layer2
+XLayer2_sv_unit
+R1
+R2
+Z41 V?9?QlQj`7h1o1m2:4d<SO1
+r1
+!s85 0
+31
+!i10b 1
+Z42 !s100 ibI;8NgQ>FPB:=lPZnN0e1
+Z43 I?9?QlQj`7h1o1m2:4d<SO1
+!i103 1
+S1
+R8
+R37
+R38
+R39
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z44 n@layer2_sv_unit
+vLayer3
+R1
+R2
+Z45 DXx4 work 14 Layer3_sv_unit 0 22 h>lDH8^54F7P35N?eezT<1
+Z46 VRh?H<`B_7o^ldN;jbLdEb0
+r1
+!s85 0
+31
+!i10b 1
+Z47 !s100 7^3f>LOcZhfMVaZ^1ocUd3
+Z48 IH=0N[>JElWbdLEhIC8hj70
+Z49 !s105 Layer3_sv_unit
+S1
+R8
+Z50 w1766088334
+Z51 8../Layer3.sv
+Z52 F../Layer3.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z53 n@layer3
+XLayer3_sv_unit
+R1
+R2
+Z54 Vh>lDH8^54F7P35N?eezT<1
+r1
+!s85 0
+31
+!i10b 1
+Z55 !s100 h4[FFM>]`2QESiM79lQj41
+Z56 Ih>lDH8^54F7P35N?eezT<1
+!i103 1
+S1
+R8
+R50
+R51
+R52
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z57 n@layer3_sv_unit
+vLayer4
+R1
+R2
+Z58 DXx4 work 14 Layer4_sv_unit 0 22 >_;A=6a[b=@n24WfKgCJj0
+Z59 VfNPo4oReLWmY?lF7Jifck3
+r1
+!s85 0
+31
+!i10b 1
+Z60 !s100 0h@P;bM<_]a5f9k>Z@TKO1
+Z61 IWb>:@MemUVG8BdVf30eDK1
+Z62 !s105 Layer4_sv_unit
+S1
+R8
+Z63 w1766088354
+Z64 8../Layer4.sv
+Z65 F../Layer4.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z66 n@layer4
+XLayer4_sv_unit
+R1
+R2
+Z67 V>_;A=6a[b=@n24WfKgCJj0
+r1
+!s85 0
+31
+!i10b 1
+Z68 !s100 MFoUkg<F@LX[4Fi2SK[0m3
+Z69 I>_;A=6a[b=@n24WfKgCJj0
+!i103 1
+S1
+R8
+R63
+R64
+R65
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Z70 n@layer4_sv_unit
+vmaxfinder
+R1
+R2
+Z71 DXx4 work 17 maxfinder_sv_unit 0 22 AZW6a981US4BlL5C;?hb40
+Z72 Vb^hDYCj4PVLjEgUz_jQ;a1
+r1
+!s85 0
+31
+!i10b 1
+Z73 !s100 RCDTeNz>LmohjPF7T5flY1
+Z74 I:GC;Si5dTgojP<BIc_3PI0
+Z75 !s105 maxfinder_sv_unit
+S1
+R8
+Z76 w1766100457
+Z77 8../maxfinder.sv
+Z78 F../maxfinder.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xmaxfinder_sv_unit
+R1
+R2
+Z79 VAZW6a981US4BlL5C;?hb40
+r1
+!s85 0
+31
+!i10b 1
+Z80 !s100 [N7;RM3RbBL<m:a3MVRlh0
+Z81 IAZW6a981US4BlL5C;?hb40
+!i103 1
+S1
+R8
+R76
+R77
+R78
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vneuron
+R1
+R2
+Z82 DXx4 work 14 neuron_sv_unit 0 22 IDij=2MaS^PEVPo23VYd30
+Z83 VRI1IQ_Cc7gl:?A1^Ma8=<3
+r1
+!s85 0
+31
+!i10b 1
+Z84 !s100 >WW>7iao3<mAWRiaN]74c1
+Z85 I4g?mAWVmnNS[O29=i@cE30
+Z86 !s105 neuron_sv_unit
+S1
+R8
+Z87 w1766028456
+Z88 8../neuron.sv
+Z89 F../neuron.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vneuron_opt
+R1
+R2
+Z90 DXx4 work 18 neuron_opt_sv_unit 0 22 63RTOJJ3D@A]J5:@4:0eI1
+Z91 V]V8W1jU=IJ3L3ZlG^R;`d0
+r1
+!s85 0
+31
+!i10b 1
+Z92 !s100 cSg8ggI7P?o=6J_lMS]803
+Z93 I`WKmXI[QGX7:;oaoGo8Q30
+Z94 !s105 neuron_opt_sv_unit
+S1
+R8
+Z95 w1766017304
+Z96 8../neuron_opt.sv
+Z97 F../neuron_opt.sv
+L0 3
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xneuron_opt_sv_unit
+R1
+R2
+Z98 V63RTOJJ3D@A]J5:@4:0eI1
+r1
+!s85 0
+31
+!i10b 1
+Z99 !s100 zbaZFMWmkXzT:XiRZNX<G2
+Z100 I63RTOJJ3D@A]J5:@4:0eI1
+!i103 1
+S1
+R8
+R95
+R96
+R97
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xneuron_sv_unit
+R1
+R2
+Z101 VIDij=2MaS^PEVPo23VYd30
+r1
+!s85 0
+31
+!i10b 1
+Z102 !s100 j?`EJ4<>68MN>46f<0LSo1
+Z103 IIDij=2MaS^PEVPo23VYd30
+!i103 1
+S1
+R8
+R87
+R88
+R89
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xnn_config_pkg
+R1
+!i10b 1
+Z104 !s100 ]HoMU=A6Qm5ih^l^oQS7J2
+Z105 Idj0E:N:7_@Gz^:D@6VMa=3
+Z106 Vdj0E:N:7_@Gz^:D@6VMa=3
+S1
+R8
+Z107 w1766109839
+Z108 8../nn_config_pkg.sv
+Z109 F../nn_config_pkg.sv
+L0 1
+R12
+r1
+!s85 0
+31
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vsig_rom
+R1
+R2
+DXx4 work 15 sig_rom_sv_unit 0 22 T5_BM[FR_CPII9<nT5bYS2
+Z110 VkloP;P5;8lLOOELBJ@15F2
+r1
+!s85 0
+31
+!i10b 1
+Z111 !s100 W3OYZ>_85Eo`N;HOK=>hW0
+Z112 I7j8NZ9=R3c;S@dNijka:P2
+Z113 !s105 sig_rom_sv_unit
+S1
+R8
+Z114 w1766111844
+Z115 8../sig_rom.sv
+Z116 F../sig_rom.sv
+L0 2
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xsig_rom_sv_unit
+R1
+R2
+VT5_BM[FR_CPII9<nT5bYS2
+r1
+!s85 0
+31
+!i10b 1
+!s100 V3RWm>=21UNIUl7Ji=1=R2
+IT5_BM[FR_CPII9<nT5bYS2
+!i103 1
+S1
+R8
+R114
+R115
+R116
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vtb_dnn
+R1
+R2
+Z117 DXx4 work 14 tb_dnn_sv_unit 0 22 ]_oVAed?lCQHQ]k7kYc9l0
+Z118 VKJzPA72nn`kW_K]NDbUnJ0
+r1
+!s85 0
+31
+!i10b 1
+Z119 !s100 5nl:iOIhHh75LI35e4WAi3
+Z120 IafI5`V?MH:_[:K_e`Ajo?0
+Z121 !s105 tb_dnn_sv_unit
+S1
+R8
+Z122 w1766182332
+Z123 8../tb_dnn.sv
+Z124 F../tb_dnn.sv
+L0 4
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xtb_dnn_sv_unit
+R1
+R2
+Z125 V]_oVAed?lCQHQ]k7kYc9l0
+r1
+!s85 0
+31
+!i10b 1
+Z126 !s100 e5^V;6zcj[jL>=1j84b>^1
+Z127 I]_oVAed?lCQHQ]k7kYc9l0
+!i103 1
+S1
+R8
+R122
+R123
+R124
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vtb_neuron
+R1
+!i10b 1
+Z128 !s100 6dXEMDOz]L8HH;7_hnPk52
+Z129 Id>WJ1GD]zhX?jUPi07<h;2
+Z130 V@?8d]2Ai@HjHK8[o5RZ?h3
+Z131 !s105 tb_neuron_sv_unit
+S1
+R8
+Z132 w1766011532
+Z133 8../tb_neuron.sv
+Z134 F../tb_neuron.sv
+L0 3
+R12
+r1
+!s85 0
+31
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vtb_neuron_opt
+R1
+R2
+Z135 DXx4 work 21 tb_neuron_opt_sv_unit 0 22 7bR0AElDYDzhZ6K_mf?Bo0
+Z136 VF6me`8GUXAP^CKX0E;=0?2
+r1
+!s85 0
+31
+!i10b 1
+Z137 !s100 R5U:m:NmfEI7e^;:b>7]52
+Z138 IT2e`AmoM?U<49cO3;:>mm2
+Z139 !s105 tb_neuron_opt_sv_unit
+S1
+R8
+Z140 w1766015083
+Z141 8../tb_neuron_opt.sv
+Z142 F../tb_neuron_opt.sv
+L0 4
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xtb_neuron_opt_sv_unit
+R1
+R2
+Z143 V7bR0AElDYDzhZ6K_mf?Bo0
+r1
+!s85 0
+31
+!i10b 1
+Z144 !s100 `3VgZ@^=gF]]J8hXR?b:X3
+Z145 I7bR0AElDYDzhZ6K_mf?Bo0
+!i103 1
+S1
+R8
+R140
+R141
+R142
+L0 2
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vweight_memory
+R1
+R2
+Z146 DXx4 work 21 weight_memory_sv_unit 0 22 I[iGf>LSQ@FN@^YkImM>:0
+Z147 VYRe2aC@NoIYW>LeKZR9Rf0
+r1
+!s85 0
+31
+!i10b 1
+Z148 !s100 o:hEa5>nCMCez8:`Eo2N30
+Z149 ICNZ1[^:U=NW53=Y4BkWS81
+Z150 !s105 weight_memory_sv_unit
+S1
+R8
+Z151 w1766027624
+Z152 8../weight_memory.sv
+Z153 F../weight_memory.sv
+L0 2
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+vweight_memory_opt
+R1
+R2
+Z154 DXx4 work 25 weight_memory_opt_sv_unit 0 22 BV=CaY0L^j>iB1=k^J4[_0
+Z155 V^>ZIaRF_6LI@ETXQ;C[;j1
+r1
+!s85 0
+31
+!i10b 1
+Z156 !s100 MF=ZbE]?O;:kX0c]ObAkR3
+Z157 InaWGnQl1^L87c2_58Xo6D3
+Z158 !s105 weight_memory_opt_sv_unit
+S1
+R8
+Z159 w1766014127
+Z160 8../weight_memory_opt.sv
+Z161 F../weight_memory_opt.sv
+L0 2
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xweight_memory_opt_sv_unit
+R1
+R2
+Z162 VBV=CaY0L^j>iB1=k^J4[_0
+r1
+!s85 0
+31
+!i10b 1
+Z163 !s100 Y4]dJ6J?6Z:R:M35^Vo3o0
+Z164 IBV=CaY0L^j>iB1=k^J4[_0
+!i103 1
+S1
+R8
+R159
+R160
+R161
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0
+Xweight_memory_sv_unit
+R1
+R2
+Z165 VI[iGf>LSQ@FN@^YkImM>:0
+r1
+!s85 0
+31
+!i10b 1
+Z166 !s100 ]7z^icaDV0^e_ln>XP99?3
+Z167 II[iGf>LSQ@FN@^YkImM>:0
+!i103 1
+S1
+R8
+R151
+R152
+R153
+L0 1
+R12
+R13
+R14
+R15
+!s101 -O0
+o-O0

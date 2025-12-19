@@ -1,0 +1,28 @@
+-- begin_signature
+-- weight_memory(num_weight
+-- 10
+-- data_width
+-- 16
+-- address_width
+-- 4
+-- weight_file
+-- "C:/SystemVerilog_NPU/w_4_2.mif")
+-- end_signature
+WIDTH=16;
+DEPTH=10;
+
+ADDRESS_RADIX=UNS;
+DATA_RADIX=BIN;
+
+CONTENT BEGIN
+	9 :	0000101111100100;
+	8 :	0000111011110001;
+	7 :	0000000000101100;
+	6 :	0001010100110101;
+	5 :	0100100101100101;
+	4 :	1011101010110111;
+	3 :	1101011011000010;
+	2 :	1010111000001011;
+	1 :	1010011000001011;
+	0 :	1111001111110000;
+END;

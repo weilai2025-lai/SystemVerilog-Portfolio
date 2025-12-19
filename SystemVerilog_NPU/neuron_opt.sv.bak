@@ -1,0 +1,157 @@
+import nn_config_pkg::*;
+
+module neuron_opt
+	#(
+		parameter int num_weight = 784,
+		parameter int data_width = 16,
+		parameter int sigmoid_size = 10,
+		parameter int parallelism = 4,
+		parameter base_dir = "C:/SystemVerilog_NPU/",
+		parameter bias_file = "b_1_0.mif",
+		parameter weight_file = "w_1_0.mif",
+		parameter bias_file_abs = {base_dir, bias_file},
+		parameter weight_file_abs = {base_dir, weight_file}
+	)(
+		input logic clk,
+		input logic rst,
+		input logic [parallelism-1:0][data_width-1:0] myinput,
+		input logic myinputvalid,
+		output logic [data_width-1:0] output_data,
+		output logic outvalid
+	);
+
+	//calculate address width
+	localparam int address_width = $clog2(num_weight);
+	//declare internal bias signal
+	logic [31:0] bias_mem[0:0];
+	logic signed [2*data_width-1:0] bias_reg;
+	//weight memory interface
+	logic ren;
+	logic [address_width-1:0] r_addr;
+	logic [data_width-1:0] wout_raw;
+	logic signed[data_width-1:0] wout;
+	//datapath pipeline element
+	logic signed [data_width-1:0] myinputd;
+	logic signed [2*data_width-1:0] mul;
+	logic signed [2*data_width-1:0] sum;
+	//control pipeline
+	logic weightvalid;
+	logic multvalid;
+	logic muxvalid;
+	logic muxvalid_d;
+	logic muxvalid_f;//catch falling edge of muxvalid
+	logic sigvalid;
+	logic outvalid_i;
+	//combinational logic element
+	logic signed [2*data_width:0] comboadd;
+	logic signed [2*data_width:0] biasadd;
+	logic signed [2*data_width-1:0] pos_sat;
+	logic signed [2*data_width-1:0] neg_sat;
+	//activation output
+	logic [data_width-1:0] act_out_sigmoid;
+	logic [sigmoid_size-1:0] sig_x;
+	/////////////////////////////////////
+	//initialize bias memory
+	initial begin
+		$readmemb(bias_file_abs, bias_mem);
+	end 
+	//shift bias value to align fixed point 
+	always_ff @(posedge clk) begin
+		bias_reg <= signed'(bias_mem[0][data_width-1:0]) << data_width;
+	end
+	
+	//update read address//
+	assign ren = myinputvalid;//using myinputvalid to trigger weight memoy module read weight value
+	always_ff @(posedge clk) begin
+		if (rst || outvalid_i) begin
+			r_addr <= '0;
+		end else if(myinputvalid) begin
+			r_addr <= r_addr + 1;
+		end
+	end
+
+	//multiply calculation(1 clk delay)
+	always_ff @(posedge clk) begin
+		myinputd <= signed'(myinput);
+		mul <= myinputd * wout;
+	end
+	
+	//Control signal timing //
+	assign wout = signed'(wout_raw);
+	assign muxvalid = multvalid; // muxvalid use combinational logic so that when weight value is ready
+										  // it means we can do both multiply and add function together	
+	always_ff @(posedge clk) begin
+		weightvalid <= myinputvalid;
+		multvalid <= weightvalid;
+		
+		muxvalid_d <= muxvalid;
+		muxvalid_f <= (! muxvalid) && (muxvalid_d); // use this to detect falling edge signal of muxvalid
+		
+		if ((r_addr == num_weight) && muxvalid_f) begin
+			sigvalid <= 1'b1;
+		end else begin
+			sigvalid <= 1'b0;
+		end
+		outvalid_i <= sigvalid;
+	end
+	
+	//do calculation//
+	assign pos_sat = {1'b0, {(2*data_width-1){1'b1}}}; // max positive
+	assign neg_sat = {1'b1, {(2*data_width-1){1'b0}}}; // min negative
+	
+	always_comb begin
+		comboadd = mul + sum;
+		biasadd = bias_reg + sum;
+	end
+	
+	always_ff @(posedge clk) begin
+		if(rst || outvalid_i) begin
+			sum <= '0;
+		end else if ((r_addr == num_weight) && muxvalid_f) begin
+			if (!bias_reg[2*data_width-1] && !sum[2*data_width-1] && biasadd[2*data_width]) begin
+				sum <= pos_sat;
+			end else if (bias_reg[2*data_width-1] && sum[2*data_width-1] && !biasadd[2*data_width]) begin
+				sum <= neg_sat;
+			end else begin
+				sum <= biasadd[2*data_width-1:0];
+			end
+		end else if (muxvalid) begin
+			if(!mul[2*data_width-1] && !sum[2*data_width-1] && comboadd[2*data_width]) begin
+				sum <= pos_sat;
+			end else if (mul[2*data_width-1] && sum[2*data_width-1] && !comboadd[2*data_width]) begin
+				sum <= neg_sat;
+			end else begin
+				sum <= comboadd[2*data_width-1:0];
+			end
+		end
+	end
+
+	//import weight_memory module
+	weight_memory#(
+		.num_weight(num_weight),
+		.data_width(data_width),
+		.address_width(address_width),
+		.weight_file(weight_file_abs)
+	)u_weight_memory(
+		.clk(clk),
+		.ren(ren),
+		.radd(r_addr),
+		.wout(wout_raw)
+	);
+	
+	//import sigmoid module
+	assign sig_x = sum[2*data_width-1 -:sigmoid_size];
+	sig_rom#(
+		.in_width(sigmoid_size),
+		.data_width(data_width),
+		.base_dir(base_dir),
+		.sigmoid_file("sigContent.mif")
+	)u_sig_rom(
+		.clk(clk),
+		.x(sig_x),
+		.output_data(act_out_sigmoid)
+	);
+	assign output_data = act_out_sigmoid;
+	assign outvalid = outvalid_i;
+endmodule
+	

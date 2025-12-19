@@ -1,0 +1,31 @@
+package nn_config_pkg;
+	//Global Settings
+	parameter bit pretrained = 1'b1;
+	parameter bit sim_read_file = 1'b1;
+	parameter int num_layers = 5;
+	parameter int data_width = 16;
+	parameter int weight_int_width = 1;
+	parameter int sigmoid_size = 10;
+	//First Layer
+	parameter int num_neuron_layer1 = 30;
+	parameter int num_weight_layer1 = 784;
+	parameter string layer1_act_type = "sigmoid";
+	//Sceond Layer
+	parameter int num_neuron_layer2 = 30;
+	parameter int num_weight_layer2 = 30;
+	parameter string layer2_act_type = "sigmoid";	
+	//Third Layer
+	parameter int num_neuron_layer3 = 10;
+	parameter int num_weight_layer3 = 30;
+	parameter string layer3_act_type = "sigmoid";	
+	//4th Layer
+	parameter int num_neuron_layer4 = 10;
+	parameter int num_weight_layer4 = 10;
+	parameter string layer4_act_type = "sigmoid";	
+	//5th Layer
+	parameter int num_neuron_layer5 = 10;
+	parameter int num_weight_layer5 = 10;
+	parameter string layer5_act_type = "hardmax";	
+
+
+endpackage: nn_config_pkg

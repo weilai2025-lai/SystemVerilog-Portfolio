@@ -1,0 +1,174 @@
+m255
+K3
+13
+cModel Technology
+Z0 dC:\SystemVerilog_NPU\simulation\modelsim
+vneuron
+Z1 DXx6 sv_std 3 std 0 22 F[19LRNL:5;XmIFh[XOPn1
+Z2 DXx4 work 13 nn_config_pkg 0 22 akkE6=DEI0i3B5iSdg_5V0
+DXx4 work 14 neuron_sv_unit 0 22 KfRd7=U=oOhG:0n?Ge]oj0
+VSkUI[^;zT]CXIf:eDIXek2
+r1
+31
+If5ND>OP0c^IRT`R3^HcLb0
+S1
+Z3 dC:\SystemVerilog_NPU\simulation\modelsim
+Z4 w1765994161
+Z5 8C:/SystemVerilog_NPU/neuron.sv
+Z6 FC:/SystemVerilog_NPU/neuron.sv
+L0 3
+Z7 OV;L;10.1d;51
+Z8 !s108 1765994402.210000
+Z9 !s107 C:/SystemVerilog_NPU/neuron.sv|
+Z10 !s90 -reportprogress|300|-sv|-work|work|+incdir+C:/SystemVerilog_NPU|C:/SystemVerilog_NPU/neuron.sv|
+Z11 o-sv -work work -O0
+Z12 !s92 -sv -work work +incdir+C:/SystemVerilog_NPU -O0
+!s85 0
+!i10b 1
+!s100 22F3@zTn^=goTSPzRdVS`1
+!s105 neuron_sv_unit
+!s101 -O0
+Xneuron_sv_unit
+R1
+R2
+VKfRd7=U=oOhG:0n?Ge]oj0
+r1
+31
+IKfRd7=U=oOhG:0n?Ge]oj0
+S1
+R3
+R4
+R5
+R6
+L0 1
+R7
+R8
+R9
+R10
+R11
+R12
+!s85 0
+!i10b 1
+!s100 UfDk11P[:YlaTAQT]9K`61
+!i103 1
+!s101 -O0
+Xnn_config_pkg
+R1
+IakkE6=DEI0i3B5iSdg_5V0
+VakkE6=DEI0i3B5iSdg_5V0
+S1
+R3
+w1765989131
+8C:/SystemVerilog_NPU/nn_config_pkg.sv
+FC:/SystemVerilog_NPU/nn_config_pkg.sv
+L0 1
+R7
+r1
+31
+R11
+R12
+!i10b 1
+!s100 khP@ZR2zmDi[WX]aQIf5l2
+!s85 0
+!s108 1765994402.112000
+!s107 C:/SystemVerilog_NPU/nn_config_pkg.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+C:/SystemVerilog_NPU|C:/SystemVerilog_NPU/nn_config_pkg.sv|
+!s101 -O0
+vsig_rom
+R1
+R2
+DXx4 work 15 sig_rom_sv_unit 0 22 2l7GIDI>JDX8OAX_z<Omn0
+VkloP;P5;8lLOOELBJ@15F2
+r1
+!s85 0
+31
+!i10b 1
+!s100 `];kUeaLCbeQmkIT`GPAZ2
+I]OX1XF;>e4EV5KCSFNhz02
+!s105 sig_rom_sv_unit
+S1
+R3
+Z13 w1765994005
+Z14 8C:/SystemVerilog_NPU/sig_rom.sv
+Z15 FC:/SystemVerilog_NPU/sig_rom.sv
+L0 2
+R7
+Z16 !s108 1765994402.432000
+Z17 !s107 C:/SystemVerilog_NPU/sig_rom.sv|
+Z18 !s90 -reportprogress|300|-sv|-work|work|+incdir+C:/SystemVerilog_NPU|C:/SystemVerilog_NPU/sig_rom.sv|
+!s101 -O0
+R11
+R12
+Xsig_rom_sv_unit
+R1
+R2
+V2l7GIDI>JDX8OAX_z<Omn0
+r1
+!s85 0
+31
+!i10b 1
+!s100 Qc`ilR?klLaXh0f0cjDzn0
+I2l7GIDI>JDX8OAX_z<Omn0
+!i103 1
+S1
+R3
+R13
+R14
+R15
+L0 1
+R7
+R16
+R17
+R18
+!s101 -O0
+R11
+R12
+vweight_memory
+R1
+R2
+DXx4 work 21 weight_memory_sv_unit 0 22 O8]=mz`ZR_8:6K>hgFb<X0
+VYRe2aC@NoIYW>LeKZR9Rf0
+r1
+31
+IGC9d7VWfI:<jTi5:3_]`31
+S1
+R3
+Z19 w1765989220
+Z20 8C:/SystemVerilog_NPU/weight_memory.sv
+Z21 FC:/SystemVerilog_NPU/weight_memory.sv
+L0 2
+R7
+Z22 !s108 1765994402.319000
+Z23 !s107 C:/SystemVerilog_NPU/weight_memory.sv|
+Z24 !s90 -reportprogress|300|-sv|-work|work|+incdir+C:/SystemVerilog_NPU|C:/SystemVerilog_NPU/weight_memory.sv|
+R11
+R12
+!s85 0
+!i10b 1
+!s100 `VoVjZEIM@a5NP=H5T_ge0
+!s105 weight_memory_sv_unit
+!s101 -O0
+Xweight_memory_sv_unit
+R1
+R2
+VO8]=mz`ZR_8:6K>hgFb<X0
+r1
+31
+IO8]=mz`ZR_8:6K>hgFb<X0
+S1
+R3
+R19
+R20
+R21
+L0 1
+R7
+R22
+R23
+R24
+R11
+R12
+!s85 0
+!i10b 1
+!s100 57OVA1^YHIP@`K_<1F2:T0
+!i103 1
+!s101 -O0

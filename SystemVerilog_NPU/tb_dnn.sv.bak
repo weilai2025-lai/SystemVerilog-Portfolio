@@ -1,0 +1,67 @@
+import nn_config_pkg::*;
+`timescale 1ns/1ps
+
+module tb_dnn;
+	parameter string FILE_PATH = "C:/SystemVerilog_NPU/test_data/test_data_0000.txt";
+	logic clk;
+	logic rst;
+	logic [15:0] x_data;
+	logic x_valid;
+	logic [3:0] class_id;
+	logic class_valid;
+	
+	logic [15:0] test_mem[0:784];
+	logic [15:0] real_label;
+	
+	dnn uut (
+        .clk(clk),
+        .rst(rst),
+        .x_data(x_data),
+        .x_valid(x_valid),
+        .class_id(class_id),
+        .class_valid(class_valid)
+    );
+	 
+	 initial begin
+		clk = 0;
+		forever #5 clk = ~clk;
+	 end
+	 
+	 initial begin
+		rst = 1;
+		x_data = '0;
+		x_valid = 0;
+		$readmemb(FILE_PATH, test_mem);
+		real_label = test_mem[784];
+		#100;
+		rst = 0;
+		#50;
+		
+		$display("Starting inference");
+		for(int i = 0; i < 784; i++) begin
+			@(posedge clk);
+			x_data <= test_mem[i];
+			x_valid <= 1'b1;
+		end
+		
+		@(posedge clk);
+		x_valid = 1'b0;
+		x_data <= '0;
+		
+		$display("Waiting Result");
+		wait(class_valid == 1'b1);
+		
+		if (class_id == real_label) begin
+            $display("============================================");
+            $display("  MATCH! AI Output: %d | Real Label: %d", class_id, real_label);
+            $display("============================================");
+        end else begin
+            $display("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+            $display("  ERROR! AI Output: %d | Real Label: %d", class_id, real_label);
+            $display("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+        end
+
+        #100;
+        $stop;
+	 end
+endmodule
