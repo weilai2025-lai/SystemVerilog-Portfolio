@@ -84,6 +84,58 @@ Int4 requires packing 2 values into 1 byte:
 uint8_t packed = (val1 & 0x0F) | ((val2 & 0x0F) << 4);
 ```
 
+### 3.4 NF4 vs Traditional Int4 Comparison
+
+**Traditional Int4**: Uses 16 **uniformly spaced** values (-8 to 7), scaled by a single factor.
+
+**NF4 (NormalFloat 4-bit)**: Uses 16 **non-uniformly spaced** values from a lookup table, optimized for normally-distributed weights (more values near 0, fewer at extremes).
+
+#### Lookup Table Comparison
+
+```
+Traditional Int4 (after scaling by absmax/7):
+  indices: -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7
+  → uniformly spaced
+
+NF4 (approximate normalized values from quant_map):
+  indices:  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+  values: -1.0, -0.69, -0.52, -0.39, -0.28, -0.18, -0.09, -0.03,
+           0.03,  0.09,  0.18,  0.28,  0.39,  0.52,  0.69,  1.0
+  → denser near 0, sparser at extremes
+```
+
+#### Example: Same Weights `[0.1, 0.5, 1.2, 2.8, -0.3]`
+
+```
+absmax = 2.8
+
+=== Traditional Int4 ===
+Normalize:     0.1/2.8=0.036   0.5/2.8=0.179   1.2/2.8=0.429   2.8/2.8=1.0   -0.3/2.8=-0.107
+Scale to -8~7: ×7 → 0.25       1.25             3.0              7.0           -0.75
+Round:              0            1                3                7             -1
+Dequant:       0×0.4=0.0       1×0.4=0.4        3×0.4=1.2        7×0.4=2.8     -1×0.4=-0.4
+Error:              0.1          0.1              0.0              0.0            0.1
+
+=== NF4 ===
+Normalize:     0.036            0.179            0.429            1.0           -0.107
+Find nearest:  0.03(idx=7)      0.18(idx=9)      0.39(idx=12)     1.0(idx=15)   -0.09(idx=6)
+Dequant:       0.03×2.8=0.084   0.18×2.8=0.504   0.39×2.8=1.092   1.0×2.8=2.8  -0.09×2.8=-0.252
+Error:              0.016        0.004            0.108            0.0            0.048
+```
+
+#### Error Comparison
+
+| Weight | Int4 Error | NF4 Error | Winner |
+|--------|-----------|-----------|--------|
+| 0.1    | 0.100     | **0.016** | NF4 |
+| 0.5    | 0.100     | **0.004** | NF4 |
+| 1.2    | **0.000** | 0.108     | Int4 |
+| 2.8    | 0.000     | 0.000     | Tie |
+| -0.3   | 0.100     | **0.048** | NF4 |
+
+> [!NOTE]
+> NF4 wins on **small values near 0** (which are the majority in neural networks), while Int4 can be more accurate for values that happen to land on its uniform grid. Overall, NF4 produces lower average error for normally-distributed weights.
+
 ---
 
 ## 4. Memory Analysis (1GB DDR4 Constraint)
