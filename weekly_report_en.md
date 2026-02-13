@@ -105,7 +105,25 @@ uint8_t packed = (val1 & 0x0F) | ((val2 & 0x0F) << 4);
 > [!WARNING]
 > The current bnb-4bit model stores embedding in **bfloat16** (0.525 GB, NOT quantized). Only linear layers are quantized to nf4.
 
-### 4.2 Model Weights in Int4 (Storage)
+### 4.2 Storage Format Breakdown (Current Safetensors)
+
+| Format | Which Parameters | Count | Params | Disk Size |
+|--------|-----------------|-------|--------|-----------|
+| **bfloat16** (native float) | `embed_tokens`, all `layernorm`, `model.norm` | 34 tensors | ~262.7M | ~0.526 GB |
+| **nf4** (bitsandbytes 4-bit) | All linear layers: `q/k/v/o_proj`, `gate/up/down_proj` | 112 tensors | ~973M | ~0.486 GB |
+| Traditional int4 | **None** | 0 | 0 | 0 |
+| Quant metadata | `quant_map`, `absmax`, `nested_absmax`, `quant_state` | 560 tensors | — | ~0.016 GB |
+
+> [!NOTE]
+> **NF4 Dequantization** (required at inference — computation must use float):
+> ```
+> 1. Unpack: each uint8 byte contains 2 × 4-bit indices (0~15)
+> 2. Lookup: quant_map[4bit_index] → normalized float value
+> 3. Scale:  float_value = quant_map[index] × absmax[group_id]
+> ```
+> Unlike uniform int4 (-8~7), NF4 uses a **non-uniform lookup table** optimized for normally-distributed weights.
+
+### 4.3 Model Weights for FPGA Deployment (Int4 Storage)
 
 **Scenario A: All weights quantized to int4 (including embedding)**
 ```
@@ -124,7 +142,7 @@ Other weights (int4): 973M × 4/8 + scale ≈ 0.52 GB
 Total: ~1.04 GB (already exceeds 1 GB!)
 ```
 
-### 4.3 KV Cache
+### 4.4 KV Cache
 
 > [!WARNING]
 > **Correction**: This model uses **GQA (Grouped Query Attention)** with `num_key_value_heads = 8` and `head_dim = 64`, so `kv_dim = 8 × 64 = 512` (NOT 2048).
@@ -142,7 +160,7 @@ KV_Cache = n_layers × 2 × seq_len × kv_dim × sizeof(float)
 | 256  | 16 × 2 × 256 × 512 × 4 = **0.017 GB** |
 | 128  | 16 × 2 × 128 × 512 × 4 = **0.008 GB** |
 
-### 4.4 Activations
+### 4.5 Activations
 
 For token-by-token inference (no batching), buffers are reused across layers:
 ```
@@ -154,13 +172,13 @@ For token-by-token inference (no batching), buffers are reused across layers:
 - Total activation buffers: ~1 MB
 ```
 
-### 4.5 Logits
+### 4.6 Logits
 
 ```
 vocab_size × 4 bytes = 128,256 × 4 = 0.5 MB
 ```
 
-### 4.6 System Overhead
+### 4.7 System Overhead
 
 ```
 - OS kernel + drivers: ~150-200 MB
@@ -168,7 +186,7 @@ vocab_size × 4 bytes = 128,256 × 4 = 0.5 MB
 - Total: ~200-250 MB
 ```
 
-### 4.7 Total Memory Requirements (Int4 Version)
+### 4.8 Total Memory Requirements (Int4 Version)
 
 **Scenario A: All weights in int4 (including embedding)**
 
