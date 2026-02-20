@@ -251,3 +251,141 @@ Total weights:                              ≈ 1.04  GB  ← already exceeds 1 
 
 2. **Fallback**: If int4 embedding is too complex to implement, upgrade to 2 GB DDR4 board
 
+---
+
+## 6. Systolic Array Research for Hardware Acceleration
+
+### 6.1 Background and Motivation
+
+In an LLM inference pipeline, **over 90% of computation** is matrix multiplication (GEMM).
+To accelerate this on FPGA, we investigated **Systolic Array** architectures — the same core design used in Google's TPU.
+
+### 6.2 Systolic Array Core Concepts
+
+**What is a Systolic Array?**
+
+A Systolic Array is a 2D grid of Processing Elements (PEs) where data flows rhythmically through the array — like blood pumping through a circulatory system — synchronized to the clock.
+
+**Processing Element (PE):**
+Each PE performs one simple operation per clock cycle — **MAC (Multiply-Accumulate)**:
+```
+output = input * weight + partial_sum
+```
+
+**Data Reuse — The Key Advantage:**
+In a traditional processor, every multiply requires fetching data from memory. In a Systolic Array, data is read from memory **once** and then passed through multiple PEs in sequence, being reused at each step. This dramatically reduces memory bandwidth requirements.
+
+**Weight Stationary Dataflow:**
+In this common dataflow strategy (used in Google TPU and Gemmini):
+- **Weights** are pre-loaded into PEs and remain **stationary** (fixed in place)
+- **Input activations** flow horizontally (left to right)
+- **Partial sums** flow vertically (top to bottom), accumulating results
+
+This is optimal for neural network inference because weights are fixed after training.
+
+**Tiling — Handling Large Matrices:**
+Real model matrices (e.g., 4096 x 4096) are far larger than the physical array (e.g., 16 x 16 PEs). The solution is **tiling**: partitioning large matrices into small blocks that fit the array, processing them sequentially. A fast on-chip **Scratchpad Memory (SRAM)** buffers these tiles to minimize slow DRAM access.
+
+When a tile does not evenly divide the matrix, the remainder is **zero-padded** to fill the array. Since `x * 0 = 0`, the padded PEs produce no effect on the result.
+
+### 6.3 Open-Source Platform: UCB Gemmini
+
+**Repository**: [ucb-bar/gemmini](https://github.com/ucb-bar/gemmini)
+
+Gemmini is a **hardware generator** developed at UC Berkeley. It is one of the most widely used academic Systolic Array accelerator platforms.
+
+**Key characteristics:**
+- Written in **Chisel** (a hardware construction language based on Scala)
+- **Not HLS** — Chisel describes hardware structure directly (like Verilog), but with parameterizable templates
+- Generates synthesizable **Verilog/SystemVerilog** from configurable parameters
+- Operates as a **co-processor** attached to a RISC-V CPU via the RoCC interface
+
+**Core source files** (in `src/main/scala/gemmini/`):
+
+| File | Role |
+|------|------|
+| `PE.scala` | Single Processing Element — implements MAC with Weight Stationary / Output Stationary dataflow |
+| `Mesh.scala` | Connects PEs into a 2D systolic grid, handles data routing |
+| `Gemmini.scala` | Top-level controller — manages Scratchpad, tiling, DMA, and CPU interface |
+
+**PE.scala code walkthrough** — the MAC unit:
+```scala
+// Core MAC operation: out_d = in_c + (in_a * in_b)
+io.out_d := io.in_c.mac(io.in_a, io.in_b)
+```
+
+In Weight Stationary mode, the PE behavior is:
+```scala
+// Weight (c2) stays fixed in register
+// Input (a) arrives from left neighbor
+// Partial sum (b) arrives from top neighbor
+// Result = a * weight + partial_sum -> sent to bottom neighbor (out_b)
+mac_unit.io.in_b := c2.asTypeOf(weightType)   // use stored weight
+mac_unit.io.in_c := b                          // add incoming partial sum
+io.out_b := mac_unit.io.out_d                  // pass result downward
+```
+
+### 6.4 SW/HW Task Partitioning for Llama 3.2
+
+Based on our analysis, the following partitioning is proposed for FPGA deployment:
+
+#### ARM CPU (SoC on FPGA) — Control and Irregular Ops
+
+| Task | Reason |
+|------|--------|
+| Tokenizer (string to token IDs) | Complex string logic, lookup tables |
+| Embedding lookup (token ID to vector) | Simple table lookup, small computation |
+| RMSNorm | Requires square root, division |
+| RoPE (Rotary Position Encoding) | Requires trigonometric functions |
+| Softmax | Requires exponentiation, division |
+| SiLU activation | Requires exponentiation |
+| Flow control | Orchestrating layer-by-layer execution |
+
+#### FPGA Systolic Array — Massive Regular GEMM
+
+| Task | Matrix Dimensions (1B model) |
+|------|------------------------------|
+| Q/K/V Projections | (seq_len, 2048) x (2048, 2048/256/256) |
+| Attention Score (Q * K^T) | (seq_len, 64) x (64, seq_len) per head |
+| Attention Output (Score * V) | (seq_len, seq_len) x (seq_len, 64) per head |
+| Output Projection | (seq_len, 2048) x (2048, 2048) |
+| FFN Gate Projection | (seq_len, 2048) x (2048, 8192) |
+| FFN Up Projection | (seq_len, 2048) x (2048, 8192) |
+| FFN Down Projection | (seq_len, 8192) x (8192, 2048) |
+
+> [!NOTE]
+> The Systolic Array handles **all linear layer multiplications**, which account for over 90% of total computation in the Transformer architecture.
+
+### 6.5 Gemmini Build Environment
+
+Gemmini requires the **Chipyard** framework to generate Verilog output:
+
+```bash
+# Clone Chipyard (~20-25 GB total after setup)
+git clone https://github.com/ucb-bar/chipyard.git
+cd chipyard
+./build-setup.sh
+source env.sh
+
+# Build Gemmini
+cd generators/gemmini
+make -C software/libgemmini install
+./scripts/setup-paths.sh
+```
+
+> [!IMPORTANT]
+> Full Chipyard setup requires ~20-25 GB disk space and 1-2 hours of build time. This environment setup is currently **in progress**.
+
+### 6.6 Current Status and Next Steps
+
+**Completed:**
+- [x] Studied Systolic Array architecture (PE, Mesh, Dataflow, Tiling)
+- [x] Identified Gemmini as a suitable open-source platform
+- [x] Analyzed PE.scala source code and verified Weight Stationary dataflow implementation
+- [x] Defined SW/HW task partitioning for Llama 3.2
+
+**Next Steps:**
+- [ ] Set up Chipyard environment and generate Gemmini Verilog
+- [ ] Configure array dimensions (e.g., 16x16) and data width (int8/int4)
+- [ ] Synthesize generated Verilog for target FPGA
+- [ ] Integrate with ARM CPU for end-to-end inference pipeline

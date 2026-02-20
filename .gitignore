@@ -1,1 +1,7 @@
 backend/DNN_conv2.sdf
+
+# macOS
+.DS_Store
+
+# iCloud placeholder files (files evicted to cloud)
+*.icloud
