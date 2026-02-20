@@ -1,7 +1,8 @@
-backend/DNN_conv2.sdf
+# Ignore everything
+*
 
-# macOS
-.DS_Store
+# But keep .md files
+!*.md
 
-# iCloud placeholder files (files evicted to cloud)
-*.icloud
+# And keep .gitignore itself
+!.gitignore
