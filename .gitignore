@@ -4,5 +4,9 @@
 # But keep .md files
 !*.md
 
+# Keep images directory and its contents
+!images/
+!images/*.png
+
 # And keep .gitignore itself
 !.gitignore

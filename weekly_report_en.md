@@ -272,6 +272,8 @@ Each PE performs one simple operation per clock cycle — **MAC (Multiply-Accumu
 output = input * weight + partial_sum
 ```
 
+![Processing Element (PE) — MAC with Weight Stationary](images/pe_diagram.png)
+
 **Data Reuse — The Key Advantage:**
 In a traditional processor, every multiply requires fetching data from memory. In a Systolic Array, data is read from memory **once** and then passed through multiple PEs in sequence, being reused at each step. This dramatically reduces memory bandwidth requirements.
 
@@ -283,10 +285,14 @@ In this common dataflow strategy (used in Google TPU and Gemmini):
 
 This is optimal for neural network inference because weights are fixed after training.
 
+![Weight Stationary Systolic Array (4x4)](images/systolic_array_grid.png)
+
 **Tiling — Handling Large Matrices:**
 Real model matrices (e.g., 4096 x 4096) are far larger than the physical array (e.g., 16 x 16 PEs). The solution is **tiling**: partitioning large matrices into small blocks that fit the array, processing them sequentially. A fast on-chip **Scratchpad Memory (SRAM)** buffers these tiles to minimize slow DRAM access.
 
 When a tile does not evenly divide the matrix, the remainder is **zero-padded** to fill the array. Since `x * 0 = 0`, the padded PEs produce no effect on the result.
+
+![Tiling: partitioning large matrices into hardware-sized blocks](images/tiling_concept.png)
 
 ### 6.3 Open-Source Platform: UCB Gemmini
 
@@ -329,16 +335,12 @@ io.out_b := mac_unit.io.out_d                  // pass result downward
 
 Based on our analysis, the following partitioning is proposed for FPGA deployment:
 
-#### ARM CPU (SoC on FPGA) — Control and Irregular Ops
+#### ARM CPU (SoC on FPGA) — Control Only
 
 | Task | Reason |
 |------|--------|
 | Tokenizer (string to token IDs) | Complex string logic, lookup tables |
 | Embedding lookup (token ID to vector) | Simple table lookup, small computation |
-| RMSNorm | Requires square root, division |
-| RoPE (Rotary Position Encoding) | Requires trigonometric functions |
-| Softmax | Requires exponentiation, division |
-| SiLU activation | Requires exponentiation |
 | Flow control | Orchestrating layer-by-layer execution |
 
 #### FPGA Systolic Array — Massive Regular GEMM
@@ -356,7 +358,54 @@ Based on our analysis, the following partitioning is proposed for FPGA deploymen
 > [!NOTE]
 > The Systolic Array handles **all linear layer multiplications**, which account for over 90% of total computation in the Transformer architecture.
 
-### 6.5 Gemmini Build Environment
+#### FPGA CORDIC Module — Activation Functions and Normalization
+
+| Task | Required Math | CORDIC Mode |
+|------|--------------|-------------|
+| RoPE (Rotary Position Encoding) | sin, cos | Circular |
+| SiLU activation (`x * sigmoid(x)`) | exp, division | Hyperbolic + Linear |
+| Softmax | exp, division | Hyperbolic + Linear |
+| RMSNorm | square root, division | Hyperbolic + Linear |
+
+> [!NOTE]
+> With a multi-mode CORDIC unit on FPGA, **all activation functions and normalization** can be offloaded from the CPU, leaving the ARM CPU responsible only for tokenization and control flow.
+
+### 6.5 CORDIC for Activation Functions on FPGA
+
+CORDIC (COordinate Rotation DIgital Computer) computes transcendental functions using **only shifts and additions** — no multipliers needed. It operates in three modes:
+
+**Circular Mode** — computes sin, cos, arctan:
+```
+x_next = x - d * y * 2^(-i)
+y_next = y + d * x * 2^(-i)
+z_next = z - d * arctan(2^(-i))
+```
+Direct application: **RoPE** requires sin(theta) and cos(theta) for each position.
+
+**Hyperbolic Mode** — computes sinh, cosh, exp:
+```
+x_next = x + d * y * 2^(-i)    (note: sign flipped vs circular)
+y_next = y + d * x * 2^(-i)
+z_next = z - d * arctanh(2^(-i))
+```
+The key insight: `exp(x) = cosh(x) + sinh(x)`. This enables:
+- **SiLU**: `sigmoid(x) = 1 / (1 + exp(-x))` — use hyperbolic mode for exp, linear mode for division
+- **Softmax**: requires exp(x) for each element, then division by sum
+
+**Linear Mode** — computes multiplication and division:
+```
+x_next = x
+y_next = y + d * x * 2^(-i)
+```
+Used for the division steps in Softmax, SiLU, and RMSNorm.
+
+**CORDIC for sqrt (used in RMSNorm):**
+The hyperbolic mode can also compute `sqrt(x)` by setting initial conditions appropriately: `x0 = x + 0.25`, `y0 = x - 0.25`, which converges to `sqrt(x)` in the x register.
+
+> [!IMPORTANT]
+> A single, configurable CORDIC module with mode selection can handle **all** non-linear operations in the Llama 3.2 pipeline. This is particularly significant because we already have a verified CORDIC RTL implementation from a previous project, which can be extended to support hyperbolic and linear modes.
+
+### 6.6 Gemmini Build Environment
 
 Gemmini requires the **Chipyard** framework to generate Verilog output:
 
@@ -376,16 +425,18 @@ make -C software/libgemmini install
 > [!IMPORTANT]
 > Full Chipyard setup requires ~20-25 GB disk space and 1-2 hours of build time. This environment setup is currently **in progress**.
 
-### 6.6 Current Status and Next Steps
+### 6.7 Current Status and Next Steps
 
 **Completed:**
 - [x] Studied Systolic Array architecture (PE, Mesh, Dataflow, Tiling)
 - [x] Identified Gemmini as a suitable open-source platform
 - [x] Analyzed PE.scala source code and verified Weight Stationary dataflow implementation
 - [x] Defined SW/HW task partitioning for Llama 3.2
+- [x] Investigated CORDIC applicability for all activation functions (RoPE, SiLU, Softmax, RMSNorm)
 
 **Next Steps:**
 - [ ] Set up Chipyard environment and generate Gemmini Verilog
 - [ ] Configure array dimensions (e.g., 16x16) and data width (int8/int4)
+- [ ] Extend existing CORDIC RTL to support hyperbolic and linear modes
 - [ ] Synthesize generated Verilog for target FPGA
-- [ ] Integrate with ARM CPU for end-to-end inference pipeline
+- [ ] Integrate Systolic Array + CORDIC + ARM CPU for end-to-end inference pipeline
