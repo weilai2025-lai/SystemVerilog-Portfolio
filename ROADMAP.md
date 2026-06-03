@@ -2,23 +2,14 @@
 
 This roadmap keeps future work visible while avoiding large generated EDA files.
 
-## Active focus
+## Active Focus
 
-- Keep RTL and design notes readable.
-- - Document verification assumptions and test entry points.
-  - - Preserve ASIC flow evidence with concise reports, screenshots, and checksums.
-    - - Avoid committing generated databases, waveform dumps, model files, or tool caches.
-     
-      - ## Next updates
-     
-      - - Add a source map for the main SystemVerilog modules.
-        - - Summarize the MNIST fixed-point data path and memory organization.
-          - - Review tracked artifacts and separate source material from generated outputs.
-            - - Add small example vectors when they are useful for review.
-             
-              - ## Later work
-             
-              - - Prepare a reproducibility checklist for synthesis and backend runs.
-                - - Add FPGA notes for BRAM mapping and timing constraints.
-                  - - Keep backend metrics aligned with the documented design status.
-                    - 
+Current maintenance focuses on keeping the RTL and design notes readable, documenting verification assumptions and test entry points, preserving ASIC flow evidence through concise reports and checksums, and keeping generated databases, waveform dumps, model files, and tool caches out of future commits.
+
+## Next Updates
+
+Near-term work includes adding a source map for the main SystemVerilog modules, summarizing the MNIST fixed-point data path and memory organization, reviewing tracked artifacts, and adding small example vectors when useful.
+
+## Later Work
+
+Longer-term work includes a reproducibility checklist for synthesis and backend runs, FPGA notes for BRAM mapping and timing constraints, and backend metrics that stay aligned with the documented design status.
